@@ -1,56 +1,27 @@
 import bpy
-
+import random
+from random import randint
+import pickle	
 bpy.context.scene.render.engine = 'CYCLES'
 
 bpy.ops.object.delete(use_global=False)
-bpy.ops.wm.open_mainfile(filepath="DropScene.blend")
+bpy.ops.wm.open_mainfile(filepath="Renderer.blend")
+l = []
+
+random.seed(50)
 
 for i in range(0,5,1):
-
-	file_loc='plic_mesh_%0.2d.stl'%i
-	drop=bpy.ops.import_mesh.stl(filepath=file_loc)
-	mat_drop = bpy.data.materials.get("Drop")
-	if mat_drop is None:
-		# create material
-		mat_drop = bpy.data.materials.new(name="Drop")
-
-	mat_drop.use_nodes=True
-	nodes=mat_drop.node_tree.nodes
-	for node in nodes:
-	    nodes.remove(node)
-
-	refractionshader = nodes.new(type='ShaderNodeBsdfRefraction')
-	glossyshader = nodes.new(type='ShaderNodeBsdfGlossy')
-	glossyshader.inputs[1].default_value=0.0
-	mixshader = nodes.new(type='ShaderNodeMixShader')
-	dropoutput = nodes.new(type='ShaderNodeOutputMaterial')
-
-	links = mat_drop.node_tree.links
-	link = links.new(refractionshader.outputs[0], mixshader.inputs[1])
-	link = links.new(glossyshader.outputs[0], mixshader.inputs[2])
-	link = links.new(mixshader.outputs[0], dropoutput.inputs[0])
-	#objname = "Plic Mesh %02d"%i
-	#bpy.data.objects[objname].scale[0]=1.0
-
-	 # Get material
-	ob = bpy.context.active_object
-	if ob.data.materials:
-	# assign to 1st material slot
-		ob.data.materials[1] = mat_drop
-	else:
-	# no slots
-		ob.data.materials.append(mat_drop)
-#bpy.context.scene.objects.active = ob
-
-	for area in bpy.context.screen.areas:
-		if area.type == 'VIEW_3D':
-			area.spaces[0].viewport_shade = 'RENDERED'
-       
-	bpy.context.scene.render.image_settings.file_format='JPEG'
-	bpy.context.scene.render.filepath = "pic%0.2d.jpg"%i
-	bpy.ops.render.render(use_viewport = True, write_still=True)
-	bpy.ops.object.select_all(action='DESELECT')
-	bpy.data.objects[3].select=True
-	bpy.ops.object.delete() 
-	#bpy.data.objects.remove(ob,do_unlink=True)
+    a,b,c,d,e = randint(0,3),randint(0,10),randint(1,4),randint(0,3),randint(0,3)
+    bpy.data.materials["Drop"].node_tree.nodes["Musgrave Texture"].inputs[1].default_value = a
+    bpy.data.materials["Drop"].node_tree.nodes["Musgrave Texture"].inputs[2].default_value = b
+    bpy.data.materials["Drop"].node_tree.nodes["Musgrave Texture"].inputs[3].default_value = c
+    bpy.data.materials["Drop"].node_tree.nodes["Musgrave Texture"].inputs[4].default_value = d
+    bpy.data.materials["Drop"].node_tree.nodes["Musgrave Texture"].inputs[5].default_value = e
+    l.append([a,b,c,d,e])
+    bpy.context.scene.render.image_settings.file_format='JPEG'
+    bpy.context.scene.render.filepath = "C:/Users/My PC/Desktop/Python/NeuralRenderer/MusgraveTextureNeuralRenderer/Generator/pic%0.2d.jpg"%i
+    bpy.ops.render.render(use_viewport = True, write_still=True)
+    with open("out.pkl","wb") as f:
+        pickle.dump(l,f)
+#    #bpy.data.objects.remove(ob,do_unlink=True)
 
